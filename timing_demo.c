@@ -31,6 +31,7 @@ roaring_bitmap_t* shuffle_in_twitter(uint32_t numToSet) {
     }
   }
 
+  roaring_bitmap_run_optimize(r1);
   return r1;
 }
 
@@ -55,6 +56,21 @@ int main(int argc, char **argv) {
       fwrite(serializedbytes,expectedsize,1,write_ptr); // write 10 bytes from our buffer
       fclose(write_ptr);
       free(serializedbytes);
+    } else if(strcmp(argv[1],"load") == 0 && argc >= 3) {
+      char* inName = argv[2];
+      FILE *fileptr = fopen(inName,"rb");  // w for write, b for binary
+      fseek(fileptr, 0, SEEK_END);          // Jump to the end of the file
+      long filelen = ftell(fileptr);             // Get the current byte offset in the file
+      rewind(fileptr);                      // Jump back to the beginning of the file
+
+      char* buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
+      fread(buffer, filelen, 1, fileptr); // Read in the entire file
+      fclose(fileptr); // Close the file
+
+      roaring_bitmap_t *loaded = roaring_bitmap_portable_deserialize(buffer);
+      free(buffer);
+
+      roaring_bitmap_free(loaded);
     }
   }
   return 0;
