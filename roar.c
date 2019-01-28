@@ -94,16 +94,17 @@ int main(int argc, char **argv) {
       roaring_bitmap_free(loaded);
     } else if(strcmp(argv[1],"or") == 0 && argc >= 4) {
       int num = argc - 2;
-      const roaring_bitmap_t** allmybitmaps = load_multiple(num, argv + num);
+      const roaring_bitmap_t** allmybitmaps = load_multiple(num, argv + 2);
       roaring_bitmap_t *result = roaring_bitmap_or_many(num, allmybitmaps);
       save(result, "result.roar");
       roaring_bitmap_free(result);
       for(int i = 0; i < num; ++i) {
         roaring_bitmap_free((roaring_bitmap_t*)allmybitmaps[i]);
       }
+      free(allmybitmaps);
     } else if(strcmp(argv[1],"and") == 0 && argc >= 4) {
       int num = argc - 2;
-      const roaring_bitmap_t** allmybitmaps = load_multiple(num, argv + num);
+      const roaring_bitmap_t** allmybitmaps = load_multiple(num, argv + 2);
       roaring_bitmap_t* result = roaring_bitmap_and(allmybitmaps[0], allmybitmaps[1]);
       for(int i = 2; i < num; ++i) {
         roaring_bitmap_and_inplace(result, allmybitmaps[i]);
@@ -113,6 +114,7 @@ int main(int argc, char **argv) {
       for(int i = 0; i < num; ++i) {
         roaring_bitmap_free((roaring_bitmap_t*)allmybitmaps[i]);
       }
+      free(allmybitmaps);
     }
   }
   return 0;
