@@ -61,6 +61,14 @@ roaring_bitmap_t* load(char* filename) {
   return loaded;
 }
 
+const roaring_bitmap_t** load_multiple(int num, char **filenames) {
+  const roaring_bitmap_t** toReturn = (const roaring_bitmap_t**)malloc(num*sizeof(roaring_bitmap_t*));
+  for(int i = 0; i < num; ++i) {
+    toReturn[i] = load(filenames[i]);
+  }
+  return toReturn;
+}
+
 int main(int argc, char **argv) {
   seed();
   if(argc > 1) {
@@ -69,7 +77,7 @@ int main(int argc, char **argv) {
       printf("making bitset with %d set bits inside a total set of %d bits\n", values, total_twitter);
       roaring_bitmap_t *created = shuffle_in_twitter(values);
 
-      char* outName = "output.roar";
+      char* outName = "created.roar";
       if(argc >= 4) {
         outName = argv[3];
       }
@@ -84,6 +92,27 @@ int main(int argc, char **argv) {
       printf("\n");
 
       roaring_bitmap_free(loaded);
+    } else if(strcmp(argv[1],"or") == 0 && argc >= 4) {
+      int num = argc - 2;
+      const roaring_bitmap_t** allmybitmaps = load_multiple(num, argv + num);
+      roaring_bitmap_t *result = roaring_bitmap_or_many(num, allmybitmaps);
+      save(result, "result.roar");
+      roaring_bitmap_free(result);
+      for(int i = 0; i < num; ++i) {
+        roaring_bitmap_free((roaring_bitmap_t*)allmybitmaps[i]);
+      }
+    } else if(strcmp(argv[1],"and") == 0 && argc >= 4) {
+      int num = argc - 2;
+      const roaring_bitmap_t** allmybitmaps = load_multiple(num, argv + num);
+      roaring_bitmap_t* result = roaring_bitmap_and(allmybitmaps[0], allmybitmaps[1]);
+      for(int i = 2; i < num; ++i) {
+        roaring_bitmap_and_inplace(result, allmybitmaps[i]);
+      }
+      save(result, "result.roar");
+      roaring_bitmap_free(result);
+      for(int i = 0; i < num; ++i) {
+        roaring_bitmap_free((roaring_bitmap_t*)allmybitmaps[i]);
+      }
     }
   }
   return 0;
