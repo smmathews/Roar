@@ -51,5 +51,6 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# our executables
+# our executables and such
 timing_demo
+*.roar

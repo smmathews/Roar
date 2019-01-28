@@ -34,10 +34,28 @@ roaring_bitmap_t* shuffle_in_twitter(uint32_t numToSet) {
   return r1;
 }
 
-int main() {
+int main(int argc, char **argv) {
   seed();
-  printf("making katy perry\n");
-  roaring_bitmap_t *katy_perry = shuffle_in_twitter(katy_perry_followers);
-  roaring_bitmap_free(katy_perry);
+  if(argc > 1) {
+    if(strcmp(argv[1],"create") == 0 && argc >= 3) {
+      uint32_t values = atoi(argv[2]);
+      printf("making bitset with %d set bits inside a total set of %d bits\n", values, total_twitter);
+      roaring_bitmap_t *created = shuffle_in_twitter(values);
+
+      uint32_t expectedsize = roaring_bitmap_portable_size_in_bytes(created);
+      char *serializedbytes = malloc(expectedsize);
+      roaring_bitmap_portable_serialize(created, serializedbytes);
+      roaring_bitmap_free(created);
+
+      char* outName = "output.roar";
+      if(argc >= 4) {
+        outName = argv[3];
+      }
+      FILE *write_ptr = fopen(outName,"wb");  // w for write, b for binary
+      fwrite(serializedbytes,expectedsize,1,write_ptr); // write 10 bytes from our buffer
+      fclose(write_ptr);
+      free(serializedbytes);
+    }
+  }
   return 0;
 }
