@@ -6,19 +6,17 @@
 #define THOUSAND 1000
 #define MILLION THOUSAND*THOUSAND
 #define BILLION THOUSAND*MILLION
-#define katy_perry_followers 107*MILLION
-#define total_twitter 1*BILLION
 
-roaring_bitmap_t* shuffle_in_twitter(uint32_t numToSet) {
+roaring_bitmap_t* shuffle_in_a_billion(uint32_t numToSet) {
   roaring_bitmap_t *r1 = roaring_bitmap_create();
     
   // add 0 through numToSet-1
   roaring_bitmap_add_range(r1, 0, numToSet);
 
-  // randomly shuffle those values throughout the total billion twitter accounts
+  // randomly shuffle those values throughout the billion fields
   // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
   size_t i;
-  for (i = total_twitter - 1; i > 0; i--) {
+  for (i = BILLION - 1; i > 0; i--) {
     size_t j = randInRange(i);
     bool jb = roaring_bitmap_contains(r1, j);
     bool ib = roaring_bitmap_contains(r1, i);
@@ -74,8 +72,8 @@ int main(int argc, char **argv) {
   if(argc > 1) {
     if(strcmp(argv[1],"create") == 0 && argc >= 3) {
       uint32_t values = atoi(argv[2]);
-      printf("making bitset with %d set bits inside a total set of %d bits\n", values, total_twitter);
-      roaring_bitmap_t *created = shuffle_in_twitter(values);
+      printf("making bitset with %d set bits inside a total set of %d bits\n", values, BILLION);
+      roaring_bitmap_t *created = shuffle_in_a_billion(values);
 
       char* outName = "created.roar";
       if(argc >= 4) {
