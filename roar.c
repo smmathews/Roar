@@ -52,7 +52,8 @@ roaring_bitmap_t* load(char* filename) {
   rewind(fileptr);                      // Jump back to the beginning of the file
 
   char* buffer = (char *)malloc((filelen+1)*sizeof(char)); // Enough memory for file + \0
-  fread(buffer, filelen, 1, fileptr); // Read in the entire file
+  long unused = fread(buffer, filelen, 1, fileptr); // Read in the entire file
+  (void)unused;
   fclose(fileptr); // Close the file
 
   roaring_bitmap_t *loaded = roaring_bitmap_portable_deserialize(buffer);
@@ -80,6 +81,7 @@ int main(int argc, char **argv) {
       roaring_bitmap_t *loaded = load(inName);
 
       roaring_bitmap_printf_describe(loaded);
+      printf("\n");
 
       roaring_bitmap_free(loaded);
     }
